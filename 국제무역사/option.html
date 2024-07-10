@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="stylesheet" href="../국제무역사/option.css">
+</head>
+<body>
+    <div class="cbt__start">
+        <div class="cbt__modal">
+            <h2>국제무역사</h2>
+            <div class="cbt__choice">
+                <select name="cbtTime" class="cbt__index">
+                    <option value="" disabled selected>회차를 선택하세요</option>
+                    <option value="../end/qest53.html">국제무역사 53회</option>
+                    <option value="../end/qest54.html">국제무역사 54회</option>
+                </select>
+            </div>
+            <div class="cbt__view">
+                당신은 <span class="subject">국제무역사 시험</span>을 선택했습니다.
+                            </div>
+            <button class="cbt__start__btn">시작하기</button>
+            <p>● 본 문제는 53회부터 57회까지의 문제를 담았습니다.</p>
+            <p>● 본 문제는 개인이 만든 국제무역사 시험입니다. 실제 시험화면과는 무관합니다.</p>
+            <p>● 모바일 혹은 태블릿 화면같이 작은 화면에서는 문제 화면이 제대로 안나올 수 있습니다.</br>
+                데스크탑 모드를 설정하시거나, 가로화면으로 하시는걸 추천드립니다.
+            </p>
+            <p>● 본 사이트의 수정 및 무단배포는 금지합니다.</p>
+            <p>● 여러분의 합격을 기원합니다.</p>
+        </div>
+        
+    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const subjectSpan = document.querySelector(".subject");
+            const cbtIndex = document.querySelector('.cbt__index');
+            const startBtn = document.querySelector('.cbt__start__btn');
+            let selectedQuizURL = '';  // 선택된 퀴즈 URL을 저장할 변수
+
+            // 드롭다운 메뉴의 선택 변경 이벤트 핸들러
+            cbtIndex.addEventListener('change', function() {
+                let selectedValue = this.value;
+                let selectedText = this.options[this.selectedIndex].text;
+                if (selectedValue) {
+                    subjectSpan.textContent = `${selectedText} 시험`; // 선택한 텍스트 업데이트
+                    selectedQuizURL = `https://get1092.github.io/Quest/end/${selectedValue}`; // 선택한 퀴즈 URL 저장
+                }
+            });
+
+            // 시작하기 버튼 클릭 이벤트 핸들러
+            startBtn.addEventListener('click', function() {
+                if (selectedQuizURL) { // 유효한 퀴즈 URL이 선택된 경우
+                    window.location.href = selectedQuizURL; // 해당 퀴즈 페이지로 리디렉션
+                } else {
+                    alert('회차를 선택하세요.'); // 선택하지 않았다면 경고 메시지 표시
+                }
+            });
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>국제무역사</title>
+    <link rel="stylesheet" href="./53.css">
+</head>
+
+<body>
+    <h2 class="quiz__title">국제무역사 53회</h2>
+    <h3 class="subQuizTitle"></h3>
+    <div class="quiz__question">
+        <img id="quizImage" src="" alt="문제 이미지">
+    </div>
+    <div class="quiz__choice">
+        <label for="choice1">
+            <input type="radio" id="choice1" name="choice" value="1">
+            <span></span>
+        </label>
+        <label for="choice2">
+            <input type="radio" id="choice2" name="choice" value="2">
+            <span></span>
+        </label>
+        <label for="choice3">
+            <input type="radio" id="choice3" name="choice" value="3">
+            <span></span>
+        </label>
+        <label for="choice4">
+            <input type="radio" id="choice4" name="choice" value="4">
+            <span></span>
+        </label>
+    </div>
+    <div class="quiz__answer">
+        <button id="prevQuizButton" class="btn prev">이전 문제</button>
+        <button id="nextQuizButton" class="btn next">다음 문제</button>
+    </div>
+    <script>
+        const folderDescriptions = {
+            'cla1': '무역규범',
+            'cla2': '무역결제',
+            'cla3': '무역계약',
+            'cla4': '무역영어'
+        };
+
+        function generateQuizInfo(numImages, numFolders) {
+            const quizInfo = [];
+            for (let j = 1; j <= numFolders; j++) {
+                for (let i = 1; i <= numImages; i++) {
+                    quizInfo.push({
+                        imgSrc: `test53data/cla${j}/image${i}.png`, // 이미지 경로 수정
+                        imgAlt: `문제 이미지 ${i} from cla${j}`,
+                        folder: `cla${j}`
+                    });
+                }
+            }
+            return quizInfo;
+        }
+
+        const quizInfo = generateQuizInfo(30, 4);
+        console.log(quizInfo);  // 경로 확인을 위해 콘솔에 출력
+        const userAnswers = new Array(quizInfo.length).fill(null);
+        const quizImage = document.getElementById("quizImage");
+        const subQuizTitle = document.querySelector(".subQuizTitle");
+        let currentQuizIndex = 0;
+
+        function updateQuiz(index) {
+            console.log('updateQuiz 함수 호출됨', index);  // 함수 호출 확인
+            quizImage.src = quizInfo[index].imgSrc;
+            quizImage.alt = quizInfo[index].imgAlt;
+            subQuizTitle.textContent = folderDescriptions[quizInfo[index].folder];
+            const radioButtons = document.querySelectorAll('input[type="radio"]');
+            radioButtons.forEach((button, idx) => {
+                button.checked = idx === userAnswers[index];
+            });
+        }
+
+        document.addEventListener("DOMContentLoaded", function () {
+            console.log('DOMContentLoaded 이벤트 실행됨');
+            updateQuiz(currentQuizIndex);
+            document.querySelectorAll('input[type="radio"]').forEach((button, idx) => {
+                button.addEventListener('change', () => {
+                    userAnswers[currentQuizIndex] = idx;
+                    console.log('답안 선택됨', idx);  // 선택된 답안 확인
+                });
+            });
+
+            const nextQuizButton = document.getElementById("nextQuizButton");
+            nextQuizButton.addEventListener("click", function () {
+                if (currentQuizIndex < quizInfo.length - 1) {
+                    currentQuizIndex++;
+                    updateQuiz(currentQuizIndex);
+                    document.getElementById("prevQuizButton").disabled = false;
+                } else {
+                    nextQuizButton.disabled = true;
+                }
+                console.log('다음 문제로 이동', currentQuizIndex);  // 다음 문제 이동 확인
+            });
+
+            const prevQuizButton = document.getElementById("prevQuizButton");
+            prevQuizButton.addEventListener("click", function () {
+                if (currentQuizIndex > 0) {
+                    currentQuizIndex--;
+                    updateQuiz(currentQuizIndex);
+                    nextQuizButton.disabled = false;
+                } else {
+                    prevQuizButton.disabled = true;
+                }
+                console.log('이전 문제로 이동', currentQuizIndex);  // 이전 문제 이동 확인
+            });
+
+            prevQuizButton.disabled = true; // 초기 상태에서는 이전 버튼 비활성화
+        });
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="./test2.css">
+    <title>Document</title>
+</head>
+<body>
+    <div class="cbt__aside">
+        <div class="cbt__info">
+            <div>
+                <button class="cbt__submit">제출하기</button>
+                <span class="cbt__time">2시간 00분</span> <!-- 시작 시간을 '2시간 00분'으로 설정 -->
+            </div>
+            <div>
+                <div class="cbt__score">
+                    <span>전체 문제수 : <em class="cbt__length">120</em>문항</span>
+                    <span>남은 문제수 : <em class="cbt__rest">120</em>문항</span><br>
+                    <span>점수 : <em class="cbt__end__score"> </em></span>
+                </div>
+            </div>
+        </div>
+        <div class="cbt__omr">
+            <div id="cla1"><h3>무역규범</h3></div>
+            <div id="cla2"><h3>무역결제</h3></div>
+            <div id="cla3"><h3>무역계약</h3></div>
+            <div id="cla4"><h3>무역영어</h3></div>
+        </div>
+    </div>
+    <script>
+        function createQuestions(sectionId, numQuestions) {
+            const section = document.getElementById(sectionId);
+            for (let i = 1; i <= numQuestions; i++) {
+                const omrDiv = document.createElement('div');
+                omrDiv.className = 'omr';
+                omrDiv.innerHTML = `
+                    <strong>${i}</strong>
+                    <input type="radio" id="${sectionId}_${i}_1" name="question${i}">
+                    <label for="${sectionId}_${i}_1"><span class="label-inner">1</span></label>
+                    <input type="radio" id="${sectionId}_${i}_2" name="question${i}">
+                    <label for="${sectionId}_${i}_2"><span class="label-inner">2</span></label>
+                    <input type="radio" id="${sectionId}_${i}_3" name="question${i}">
+                    <label for="${sectionId}_${i}_3"><span class="label-inner">3</span></label>
+                    <input type="radio" id="${sectionId}_${i}_4" name="question${i}">
+                    <label for="${sectionId}_${i}_4"><span class="label-inner">4</span></label>
+                `;
+                section.appendChild(omrDiv);
+
+                Array.from(omrDiv.querySelectorAll('input[type="radio"]')).forEach(input => {
+                    input.addEventListener('change', () => {
+                        updateRemainingQuestions();
+                    });
+                });
+            }
+        }
+
+        function updateRemainingQuestions() {
+            const totalQuestions = parseInt(document.querySelector('.cbt__length').textContent, 10);
+            const answeredQuestions = Array.from(document.querySelectorAll('input[type=radio]:checked')).length;
+            const remainingQuestions = totalQuestions - answeredQuestions;
+            document.querySelector('.cbt__rest').textContent = remainingQuestions;
+        }
+
+        function startTimer(duration, display) {
+            let timer = duration, hours, minutes;
+            const interval = setInterval(() => {
+                hours = parseInt(timer / 60, 10);
+                minutes = timer % 60;
+
+                hours = hours < 10 ? "0" + hours : hours;
+                minutes = minutes < 10 ? "0" + minutes : minutes;
+
+                display.textContent = hours + "시간 " + minutes + "분";
+
+                if (--timer < 0) {
+                    clearInterval(interval);
+                    alert("시간 초과!");
+                }
+            }, 60000); // 감소하는 시간 간격을 60000ms, 즉 1분으로 설정
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const timeDisplay = document.querySelector('.cbt__time');
+            startTimer(120, timeDisplay); // 120분에서 시작
+            createQuestions('cla1', 30);
+            createQuestions('cla2', 30);
+            createQuestions('cla3', 30);
+            createQuestions('cla4', 30);
+        });
+
+        document.querySelector(".cbt__submit").addEventListener("click", function() {
+            alert("시험 제출 완료!");
+        });
+    </script>
+</body>
+</html>
