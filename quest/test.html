@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>통합 페이지</title>
+    <link rel="stylesheet" href="./53.css">
+    <link rel="stylesheet" href="../omr/test2.css">
+</head>
+
+<body>
+    <div class="container">
+        <!-- 문제 표시 및 답변 선택 섹션 -->
+        <div class="quiz">
+            <h2 class="quiz__title">국제무역사 53회</h2>
+            <h3 class="subQuizTitle"></h3>
+            <div class="quiz__question">
+                <img id="quizImage" src="" alt="문제 이미지">
+            </div>
+            <div class="quiz__choice">
+                <label for="choice1"><input type="radio" id="choice1" name="choice" value="1"><span></span></label>
+                <label for="choice2"><input type="radio" id="choice2" name="choice" value="2"><span></span></label>
+                <label for="choice3"><input type="radio" id="choice3" name="choice" value="3"><span></span></label>
+                <label for="choice4"><input type="radio" id="choice4" name="choice" value="4"><span></span></label>
+            </div>
+            <div class="quiz__answer">
+                <button id="prevQuizButton" class="btn prev">이전 문제</button>
+                <button id="nextQuizButton" class="btn next">다음 문제</button>
+            </div>
+        </div>
+
+        <!-- OMR 및 제출 섹션 -->
+        <div class="cbt">
+            <div class="cbt__aside">
+                <div class="cbt__info">
+                    <button id="submitQuizButton" class="cbt__submit">제출하기</button>
+                    <span class="cbt__time">2시간 00분</span>
+                    <div class="cbt__score">
+                        <span>전체 문제수 : <em class="cbt__length">120</em>문항</span>
+                        <span>남은 문제수 : <em class="cbt__rest">120</em>문항</span><br>
+                        <span>점수 : <em class="cbt__end__score"></em></span>
+                    </div>
+                </div>
+                <div class="cbt__omr">
+                    <div id="cla1">
+                        <h3>무역규범</h3>
+                    </div>
+                    <div id="cla2">
+                        <h3>무역결제</h3>
+                    </div>
+                    <div id="cla3">
+                        <h3>무역계약</h3>
+                    </div>
+                    <div id="cla4">
+                        <h3>무역영어</h3>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <script>
+            const quizInfo = generateQuizInfo(30, 4); // 문제 수와 폴더 수 인수로 넘김
+
+            function generateQuizInfo(numImages, numFolders) {
+                const quizInfo = [];
+                for (let j = 1; j <= numFolders; j++) {
+                    for (let i = 1; i <= numImages; i++) {
+                        quizInfo.push({
+                            imgSrc: https://get1092.github.io/Trade/test53data/cla${j}/image${i}.png,
+                            imgAlt: 문제 이미지 ${ i } from cla${ j },
+                            answer: Math.floor(Math.random() * 4) + 1,
+                            folder: cla${ j }
+                        });
+                }
+            }
+            return quizInfo;
+            }
+
+            const userAnswers = new Array(quizInfo.length).fill(null);
+            let currentQuizIndex = 0;
+
+            function updateQuiz(index) {
+                const quiz = quizInfo[index];
+                const quizImage = document.getElementById("quizImage");
+                quizImage.src = quiz.imgSrc;
+                quizImage.alt = quiz.imgAlt;
+                document.querySelector(".subQuizTitle").textContent = folderDescriptions[quiz.folder];
+                const radioButtons = document.querySelectorAll('input[name="choice"]');
+                radioButtons.forEach((button, idx) => {
+                    button.checked = idx + 1 === userAnswers[index];
+                });
+                updateOMRDisplay(index);
+            }
+
+            function createOMR() {
+                ['cla1', 'cla2', 'cla3', 'cla4'].forEach((cla, index) => {
+                    const section = document.getElementById(cla);
+                    for (let i = 1; i <= 30; i++) { // 가정: 각 클래스당 30개 문제
+                        const div = document.createElement('div');
+                        div.className = 'omr';
+                        div.innerHTML = <strong>${i}</strong>
+                            <input type="radio" id="${cla}_${i}_1" name="${cla}_question${i}" value="1">
+                            <label for="${cla}_${i}_1"><span class="label-inner">1</span></label>
+                            <input type="radio" id="${cla}_${i}_2" name="${cla}_question${i}" value="2">
+                            <label for="${cla}_${i}_2"><span class="label-inner">2</span></label>
+                            <input type="radio" id="${cla}_${i}_3" name="${cla}_question${i}" value="3">
+                            <label for="${cla}_${i}_3"><span class="label-inner">3</span></label>
+                            <input type="radio" id="${cla}_${i}_4" name="${cla}_question${i}" value="4">
+                            <label for="${cla}_${i}_4"><span class="label-inner">4</span></label>;
+                        section.appendChild(div);
+                    }
+                });
+            }
+
+            function updateOMRDisplay(currentIndex) {
+                const quiz = quizInfo[currentIndex];
+                const folder = quiz.folder;
+                const questionNumber = (currentIndex % 30) + 1;
+                const selectedAnswer = userAnswers[currentIndex];
+                const inputs = document.querySelectorAll(#${folder} input[name="${folder}_question${questionNumber}"]);
+                inputs.forEach(input => {
+                    input.checked = parseInt(input.value) === selectedAnswer;
+                });
+            }
+
+            function updateTime() {
+                let minutes = Math.floor(questionTimeRemain / 60);
+                let seconds = questionTimeRemain % 60;
+                const timeDisplay = document.querySelector('.cbt__time');
+                timeDisplay.textContent = ${minutes}시간 ${seconds < 10 ? '0' + seconds : seconds}분;
+                if (questionTimeRemain > 0) {
+                    setTimeout(updateTime, 1000);
+                    questionTimeRemain--;
+                } else {
+                    alert("시간이 종료되었습니다. 시험이 제출됩니다.");
+                    submitQuiz();
+                }
+            }
+
+            function submitQuiz() {
+                let correctCount = 0;
+                quizInfo.forEach((quiz, index) => {
+                    if (userAnswers[index] === quiz.answer) {
+                        correctCount++;
+                    }
+                });
+                const score = (correctCount * 100) / quizInfo.length;
+                document.querySelector('.cbt__end__score').textContent = 점수: ${score.toFixed(2)}점;
+                alert(시험이 제출되었습니다. 점수: ${score.toFixed(2)}점);
+            }
+
+            document.addEventListener("DOMContentLoaded", function () {
+                createOMR();
+                updateQuiz(0);
+                updateTime();
+                document.getElementById("submitQuizButton").addEventListener('click', submitQuiz);
+
+                // 모든 문제 선택 라디오 버튼에 대한 이벤트 리스너 추가
+                attachChoiceEventListeners();
+            });
+            function attachChoiceEventListeners() {
+                const choiceInputs = document.querySelectorAll('input[name="choice"]');
+                choiceInputs.forEach(input => {
+                    input.addEventListener('change', function () {
+                        const choiceValue = parseInt(this.value);
+                        userAnswers[currentQuizIndex] = choiceValue;
+                        updateOMRDisplay(currentQuizIndex);
+                    });
+                });
+            }
+        </script>
+    </div>
+</body>
+
+</html>

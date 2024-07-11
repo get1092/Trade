@@ -49,7 +49,7 @@
             for (let j = 1; j <= numFolders; j++) {
                 for (let i = 1; i <= numImages; i++) {
                     quizInfo.push({
-                        imgSrc: `./test53data/cla${j}/image${i}.png`, // 이미지 경로 수정
+                        imgSrc: `https://get1092.github.io/Trade/test53data/cla${j}/image${i}.png`,
                         imgAlt: `문제 이미지 ${i} from cla${j}`,
                         folder: `cla${j}`
                     });
@@ -58,15 +58,15 @@
             return quizInfo;
         }
 
+
         const quizInfo = generateQuizInfo(30, 4);
-        console.log(quizInfo);  // 경로 확인을 위해 콘솔에 출력
         const userAnswers = new Array(quizInfo.length).fill(null);
         const quizImage = document.getElementById("quizImage");
         const subQuizTitle = document.querySelector(".subQuizTitle");
         let currentQuizIndex = 0;
 
         function updateQuiz(index) {
-            console.log('updateQuiz 함수 호출됨', index);  // 함수 호출 확인
+
             quizImage.src = quizInfo[index].imgSrc;
             quizImage.alt = quizInfo[index].imgAlt;
             subQuizTitle.textContent = folderDescriptions[quizInfo[index].folder];
@@ -77,12 +77,12 @@
         }
 
         document.addEventListener("DOMContentLoaded", function () {
-            console.log('DOMContentLoaded 이벤트 실행됨');
+
             updateQuiz(currentQuizIndex);
             document.querySelectorAll('input[type="radio"]').forEach((button, idx) => {
                 button.addEventListener('change', () => {
                     userAnswers[currentQuizIndex] = idx;
-                    console.log('답안 선택됨', idx);  // 선택된 답안 확인
+
                 });
             });
 
@@ -95,7 +95,7 @@
                 } else {
                     nextQuizButton.disabled = true;
                 }
-                console.log('다음 문제로 이동', currentQuizIndex);  // 다음 문제 이동 확인
+
             });
 
             const prevQuizButton = document.getElementById("prevQuizButton");
@@ -107,7 +107,7 @@
                 } else {
                     prevQuizButton.disabled = true;
                 }
-                console.log('이전 문제로 이동', currentQuizIndex);  // 이전 문제 이동 확인
+
             });
 
             prevQuizButton.disabled = true; // 초기 상태에서는 이전 버튼 비활성화
