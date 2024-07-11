@@ -1,194 +1,226 @@
-<style>
-    .container {
-        display: grid;
-        grid-template-columns: 15fr 1fr;
-        gap: 0px;
-        height: 100vh;
-    }
+<!DOCTYPE html>
+<html lang="ko">
 
-    .omr strong {
-        cursor: pointer;
-        display: inline-block;
-        padding: 1px 5px;
-        background-color: #2c5a8b;
-        color: #fff;
-        border-radius: 50%;
-        margin: 2px 0;
-        text-align: center;
-        width: 20px;
-        height: 20px;
-        line-height: 20px;
-    }
+<head>
+    <meta charset="UTF-8">
+    <title>Quiz Application</title>
+    <link rel="stylesheet" href="../53/53.css">
+    <link rel="stylesheet" href="../omr/test2.css">
 
-    .omr .incorrect {
-        background-color: red;
-    }
-</style>
+    <style>
+        .container {
+            display: grid;
+            grid-template-columns: 15fr 1fr;
+            gap: 0px;
+            height: 100vh;
+        }
 
-<script>
-    function generateQuizInfo(numImages, numFolders) {
-        const quizInfo = [];
-        for (let j = 1; j <= numFolders; j++) {
-            for (let i = 1; i <= numImages; i++) {
-                quizInfo.push({
-                    imgSrc: `https://get1092.github.io/Trade/test53data/cla${j}/image${i}.png`,
-                    imgAlt: `문제 이미지 ${i} from cla${j}`,
-                    answer: Math.floor(Math.random() * 4) + 1, // 답변은 랜덤으로 생성
-                    folder: `cla${j}`
+        .omr strong {
+            cursor: pointer;
+            display: inline-block;
+            padding: 1px 5px;
+            background-color: #2c5a8b;
+            color: #fff;
+            border-radius: 50%;
+            margin: 2px 0;
+            text-align: center;
+            width: 20px;
+            height: 20px;
+            line-height: 20px;
+        }
+
+        .omr .incorrect {
+            background-color: red;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="cla1"></div>
+    <div id="cla2"></div>
+    <div id="cla3"></div>
+    <div id="cla4"></div>
+    <img id="quizImage" src="" alt="">
+    <div class="subQuizTitle"></div>
+    <div class="cbt__time"></div>
+    <div class="cbt__length">120</div>
+    <div class="cbt__rest"></div>
+    <button id="prevQuizButton">Previous</button>
+    <button id="nextQuizButton">Next</button>
+    <button class="cbt__submit">Submit</button>
+    <div class="cbt__end__score"></div>
+
+    <script>
+        function generateQuizInfo(numImages, numFolders) {
+            const quizInfo = [];
+            for (let j = 1; j <= numFolders; j++) {
+                for (let i = 1; i <= numImages; i++) {
+                    quizInfo.push({
+                        imgSrc: `https://get1092.github.io/Trade/test53data/cla${j}/image${i}.png`,
+                        imgAlt: `문제 이미지 ${i} from cla${j}`,
+                        answer: Math.floor(Math.random() * 4) + 1, // 답변은 랜덤으로 생성
+                        folder: `cla${j}`
+                    });
+                }
+            }
+            return quizInfo;
+        }
+
+        const folderDescriptions = {
+            cla1: "Folder 1 Description",
+            cla2: "Folder 2 Description",
+            cla3: "Folder 3 Description",
+            cla4: "Folder 4 Description"
+        };
+
+        const quizInfo = generateQuizInfo(30, 4);
+        const userAnswers = new Array(quizInfo.length).fill(null);
+        const quizImage = document.getElementById("quizImage");
+        const subQuizTitle = document.querySelector(".subQuizTitle");
+        let currentQuizIndex = 0;
+
+        function updateQuiz(index) {
+            const quiz = quizInfo[index];
+            quizImage.src = quiz.imgSrc;
+            quizImage.alt = quiz.imgAlt;
+            subQuizTitle.textContent = folderDescriptions[quiz.folder];
+            const radioButtons = document.querySelectorAll('input[type="radio"]');
+            radioButtons.forEach((button, idx) => {
+                button.checked = (idx + 1) === userAnswers[index];
+            });
+        }
+
+        function initializeQuiz() {
+            createQuestions('cla1', 30, 0);
+            createQuestions('cla2', 30, 30);
+            createQuestions('cla3', 30, 60);
+            createQuestions('cla4', 30, 90);
+        }
+
+        function createQuestions(sectionId, numQuestions, startIndex) {
+            const section = document.getElementById(sectionId);
+            if (!section) return;
+            for (let i = 1; i <= numQuestions; i++) {
+                const omrDiv = document.createElement('div');
+                omrDiv.className = 'omr';
+                omrDiv.innerHTML = `
+                    <strong data-index="${startIndex + i - 1}">${i}</strong>
+                    <input type="radio" id="${sectionId}_${i}_1" name="${sectionId}_question${i}" value="1">
+                    <label for="${sectionId}_${i}_1"><span class="label-inner">1</span></label>
+                    <input type="radio" id="${sectionId}_${i}_2" name="${sectionId}_question${i}" value="2">
+                    <label for="${sectionId}_${i}_2"><span class="label-inner">2</span></label>
+                    <input type="radio" id="${sectionId}_${i}_3" name="${sectionId}_question${i}" value="3">
+                    <label for="${sectionId}_${i}_3"><span class="label-inner">3</span></label>
+                    <input type="radio" id="${sectionId}_${i}_4" name="${sectionId}_question${i}" value="4">
+                    <label for="${sectionId}_${i}_4"><span class="label-inner">4</span></label>
+                `;
+                section.appendChild(omrDiv);
+
+                omrDiv.querySelector('strong').addEventListener('click', function () {
+                    const questionIndex = parseInt(this.dataset.index);
+                    currentQuizIndex = questionIndex;
+                    updateQuiz(currentQuizIndex);
+                });
+
+                Array.from(omrDiv.querySelectorAll('input[type="radio"]')).forEach(input => {
+                    input.addEventListener('change', (e) => {
+                        const questionIndex = startIndex + (parseInt(e.target.id.split('_')[1]) - 1);
+                        answerSelect(input, questionIndex);
+                    });
                 });
             }
         }
-        return quizInfo;
-    }
 
-    const quizInfo = generateQuizInfo(30, 4);
-    const userAnswers = new Array(quizInfo.length).fill(null);
-    const quizImage = document.getElementById("quizImage");
-    const subQuizTitle = document.querySelector(".subQuizTitle");
-    let currentQuizIndex = 0;
+        function answerSelect(button, index) {
+            userAnswers[index] = parseInt(button.value);
+            updateRemainingQuestions();
+        }
 
-    function updateQuiz(index) {
-        const quiz = quizInfo[index];
-        document.getElementById('quizImage').src = quiz.imgSrc;
-        document.getElementById('quizImage').alt = quiz.imgAlt;
-        document.querySelector('.subQuizTitle').textContent = folderDescriptions[quiz.folder];
-        quizImage.src = quizInfo[index].imgSrc;
-        quizImage.alt = quizInfo[index].imgAlt;
-        subQuizTitle.textContent = folderDescriptions[quizInfo[index].folder];
-        const radioButtons = document.querySelectorAll('input[type="radio"]');
-        radioButtons.forEach((button, idx) => {
-            button.checked = (idx + 1) === userAnswers[index];
-        });
-    }
+        function updateRemainingQuestions() {
+            const totalQuestions = parseInt(document.querySelector('.cbt__length').textContent, 10);
+            const answeredQuestions = userAnswers.filter(answer => answer !== null).length;
+            const remainingQuestions = totalQuestions - answeredQuestions;
+            document.querySelector('.cbt__rest').textContent = remainingQuestions;
+        }
 
-    document.addEventListener("DOMContentLoaded", function () {
-        createQuestions();
-        initializeQuiz();
-        attachAnswerListeners();
-        updateQuiz(currentQuizIndex);
-        document.querySelectorAll('input[name="choice"]').forEach((button) => {
-            button.addEventListener('change', () => {
-                answerSelect(button, currentQuizIndex);
-            });
-        });
+        function startTimer(duration, display) {
+            let timer = duration, hours, minutes;
+            const interval = setInterval(() => {
+                hours = parseInt(timer / 60, 10);
+                minutes = timer % 60;
 
-        const nextQuizButton = document.getElementById("nextQuizButton");
-        nextQuizButton.addEventListener("click", function () {
-            if (currentQuizIndex < quizInfo.length - 1) {
-                currentQuizIndex++;
-                updateQuiz(currentQuizIndex);
-                document.getElementById("prevQuizButton").disabled = false;
-            } else {
-                nextQuizButton.disabled = true;
-            }
-        });
+                hours = hours < 10 ? "0" + hours : hours;
+                minutes = minutes < 10 ? "0" + minutes : minutes;
 
-        const prevQuizButton = document.getElementById("prevQuizButton");
-        prevQuizButton.addEventListener("click", function () {
-            if (currentQuizIndex > 0) {
-                currentQuizIndex--;
-                updateQuiz(currentQuizIndex);
-                nextQuizButton.disabled = false;
-            } else {
-                prevQuizButton.disabled = true;
-            }
-        });
+                display.textContent = hours + "시간 " + minutes + "분";
 
-        prevQuizButton.disabled = true;
-    });
+                if (--timer < 0) {
+                    clearInterval(interval);
+                    alert("시간 초과!");
+                }
+            }, 60000);
+        }
 
-    document.addEventListener('DOMContentLoaded', () => {
-        const timeDisplay = document.querySelector('.cbt__time');
-        startTimer(120, timeDisplay);
-        createQuestions('cla1', 30, 0);
-        createQuestions('cla2', 30, 30);
-        createQuestions('cla3', 30, 60);
-        createQuestions('cla4', 30, 90);
-    });
-
-    function createQuestions(sectionId, numQuestions, startIndex) {
-        const section = document.getElementById(sectionId);
-        for (let i = 1; i <= numQuestions; i++) {
-            const omrDiv = document.createElement('div');
-            omrDiv.className = 'omr';
-            omrDiv.innerHTML = `
-                <strong data-index="${startIndex + i - 1}">${i}</strong>
-                <input type="radio" id="${sectionId}_${i}_1" name="${sectionId}_question${i}" value="1">
-                <label for="${sectionId}_${i}_1"><span class="label-inner">1</span></label>
-                <input type="radio" id="${sectionId}_${i}_2" name="${sectionId}_question${i}" value="2">
-                <label for="${sectionId}_${i}_2"><span class="label-inner">2</span></label>
-                <input type="radio" id="${sectionId}_${i}_3" name="${sectionId}_question${i}" value="3">
-                <label for="${sectionId}_${i}_3"><span class="label-inner">3</span></label>
-                <input type="radio" id="${sectionId}_${i}_4" name="${sectionId}_question${i}" value="4">
-                <label for="${sectionId}_${i}_4"><span class="label-inner">4</span></label>
-            `;
-            section.appendChild(omrDiv);
-
-            omrDiv.querySelector('strong').addEventListener('click', function () {
-                const questionIndex = parseInt(this.dataset.index);
-                currentQuizIndex = questionIndex;
-                updateQuiz(currentQuizIndex);
-            });
-
-            Array.from(omrDiv.querySelectorAll('input[type="radio"]')).forEach(input => {
-                input.addEventListener('change', (e) => {
-                    const questionIndex = startIndex + (parseInt(e.target.id.split('_')[1]) - 1);
-                    answerSelect(input, questionIndex);
+        document.addEventListener("DOMContentLoaded", function () {
+            initializeQuiz();
+            startTimer(120, document.querySelector('.cbt__time'));
+            updateQuiz(currentQuizIndex);
+            document.querySelectorAll('input[name="choice"]').forEach((button) => {
+                button.addEventListener('change', () => {
+                    answerSelect(button, currentQuizIndex);
                 });
             });
-        }
-    }
 
-    function updateRemainingQuestions() {
-        const totalQuestions = parseInt(document.querySelector('.cbt__length').textContent, 10);
-        const answeredQuestions = userAnswers.filter(answer => answer !== null).length;
-        const remainingQuestions = totalQuestions - answeredQuestions;
-        document.querySelector('.cbt__rest').textContent = remainingQuestions;
-    }
+            const nextQuizButton = document.getElementById("nextQuizButton");
+            nextQuizButton.addEventListener("click", function () {
+                if (currentQuizIndex < quizInfo.length - 1) {
+                    currentQuizIndex++;
+                    updateQuiz(currentQuizIndex);
+                    document.getElementById("prevQuizButton").disabled = false;
+                } else {
+                    nextQuizButton.disabled = true;
+                }
+            });
 
-    function startTimer(duration, display) {
-        let timer = duration, hours, minutes;
-        const interval = setInterval(() => {
-            hours = parseInt(timer / 60, 10);
-            minutes = timer % 60;
+            const prevQuizButton = document.getElementById("prevQuizButton");
+            prevQuizButton.addEventListener("click", function () {
+                if (currentQuizIndex > 0) {
+                    currentQuizIndex--;
+                    updateQuiz(currentQuizIndex);
+                    nextQuizButton.disabled = false;
+                } else {
+                    prevQuizButton.disabled = true;
+                }
+            });
 
-            hours = hours < 10 ? "0" + hours : hours;
-            minutes = minutes < 10 ? "0" + minutes : minutes;
+            prevQuizButton.disabled = true;
 
-            display.textContent = hours + "시간 " + minutes + "분";
+            document.querySelector(".cbt__submit").addEventListener("click", function () {
+                let correctCount = 0; // 맞힌 문제 수를 세는 변수
+                userAnswers.forEach((answer, index) => {
+                    const correctAnswer = quizInfo[index].answer;
+                    const omrQuestions = document.querySelectorAll('.omr');
 
-            if (--timer < 0) {
-                clearInterval(interval);
-                alert("시간 초과!");
-            }
-        }, 60000);
-    }
+                    if (answer !== null && parseInt(answer, 10) === correctAnswer) {
+                        correctCount++; // 정답이면 맞힌 문제 수 증가
+                    } else {
+                        // 틀린 경우 빨간 배경으로 표시
+                        omrQuestions[index].querySelector('strong').classList.add('incorrect');
+                    }
+                });
 
-    document.querySelector(".cbt__submit").addEventListener("click", function () {
-        let correctCount = 0; // 맞힌 문제 수를 세는 변수
-        userAnswers.forEach((answer, index) => {
-            const correctAnswer = quizInfo[index].answer;
-            const omrQuestions = document.querySelectorAll('.omr');
+                // 점수 계산: 맞춘 문제 수에 따라 점수 계산
+                let score = Math.round((correctCount * 3.3)); // 문제당 3.3점을 부여하고 반올림하여 점수 계산
 
-            if (answer !== null && parseInt(answer, 10) === correctAnswer) {
-                correctCount++; // 정답이면 맞힌 문제 수 증가
-            } else {
-                // 틀린 경우 빨간 배경으로 표시
-                omrQuestions[index].querySelector('strong').classList.add('incorrect');
-            }
+                const scoreDisplay = document.querySelector('.cbt__end__score');
+                scoreDisplay.textContent = `점수: ${score}점`; // 계산된 점수를 화면에 표시
+                alert("시험 제출 완료! 점수: " + score + "점"); // 제출 완료 알림과 함께 점수 표시
+
+                // 디버깅을 위해 콘솔에 정보 출력
+                console.log(`맞춘 문제 수: ${correctCount}, 계산된 점수: ${score}`);
+            });
         });
-
-        // 점수 계산: 맞춘 문제 수에 따라 점수 계산
-        let score = Math.round((correctCount * 3.3)); // 문제당 3.3점을 부여하고 반올림하여 점수 계산
-
-        const scoreDisplay = document.querySelector('.cbt__end__score');
-        scoreDisplay.textContent = `점수: ${score}점`; // 계산된 점수를 화면에 표시
-        alert("시험 제출 완료! 점수: " + score + "점"); // 제출 완료 알림과 함께 점수 표시
-
-        // 디버깅을 위해 콘솔에 정보 출력
-        console.log(`맞춘 문제 수: ${correctCount}, 계산된 점수: ${score}`);
-    });
-</script>
+    </script>
 </body>
 
 </html>
