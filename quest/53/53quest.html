@@ -1,268 +1,194 @@
-<!DOCTYPE html>
-<html lang="ko">
+<style>
+    .container {
+        display: grid;
+        grid-template-columns: 15fr 1fr;
+        gap: 0px;
+        height: 100vh;
+    }
 
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>통합 페이지</title>
-    <link rel="stylesheet" href="./53.css">
-    <link rel="stylesheet" href="../omr/test2.css">
-    <style>
-        .container {
-            display: grid;
-            grid-template-columns: 15fr 1fr;
-            gap: 0px;
-            height: 100vh;
+    .omr strong {
+        cursor: pointer;
+        display: inline-block;
+        padding: 1px 5px;
+        background-color: #2c5a8b;
+        color: #fff;
+        border-radius: 50%;
+        margin: 2px 0;
+        text-align: center;
+        width: 20px;
+        height: 20px;
+        line-height: 20px;
+    }
+
+    .omr .incorrect {
+        background-color: red;
+    }
+</style>
+
+<script>
+    function generateQuizInfo(numImages, numFolders) {
+        const quizInfo = [];
+        for (let j = 1; j <= numFolders; j++) {
+            for (let i = 1; i <= numImages; i++) {
+                quizInfo.push({
+                    imgSrc: `https://get1092.github.io/Trade/test53data/cla${j}/image${i}.png`,
+                    imgAlt: `문제 이미지 ${i} from cla${j}`,
+                    answer: Math.floor(Math.random() * 4) + 1, // 답변은 랜덤으로 생성
+                    folder: `cla${j}`
+                });
+            }
         }
+        return quizInfo;
+    }
 
-        .quiz,
-        .cbt {
-            overflow-y: auto;
-            padding: 20px;
+    const quizInfo = generateQuizInfo(30, 4);
+    const userAnswers = new Array(quizInfo.length).fill(null);
+    const quizImage = document.getElementById("quizImage");
+    const subQuizTitle = document.querySelector(".subQuizTitle");
+    let currentQuizIndex = 0;
+
+    function updateQuiz(index) {
+        const quiz = quizInfo[index];
+        document.getElementById('quizImage').src = quiz.imgSrc;
+        document.getElementById('quizImage').alt = quiz.imgAlt;
+        document.querySelector('.subQuizTitle').textContent = folderDescriptions[quiz.folder];
+        quizImage.src = quizInfo[index].imgSrc;
+        quizImage.alt = quizInfo[index].imgAlt;
+        subQuizTitle.textContent = folderDescriptions[quizInfo[index].folder];
+        const radioButtons = document.querySelectorAll('input[type="radio"]');
+        radioButtons.forEach((button, idx) => {
+            button.checked = (idx + 1) === userAnswers[index];
+        });
+    }
+
+    document.addEventListener("DOMContentLoaded", function () {
+        createQuestions();
+        initializeQuiz();
+        attachAnswerListeners();
+        updateQuiz(currentQuizIndex);
+        document.querySelectorAll('input[name="choice"]').forEach((button) => {
+            button.addEventListener('change', () => {
+                answerSelect(button, currentQuizIndex);
+            });
+        });
+
+        const nextQuizButton = document.getElementById("nextQuizButton");
+        nextQuizButton.addEventListener("click", function () {
+            if (currentQuizIndex < quizInfo.length - 1) {
+                currentQuizIndex++;
+                updateQuiz(currentQuizIndex);
+                document.getElementById("prevQuizButton").disabled = false;
+            } else {
+                nextQuizButton.disabled = true;
+            }
+        });
+
+        const prevQuizButton = document.getElementById("prevQuizButton");
+        prevQuizButton.addEventListener("click", function () {
+            if (currentQuizIndex > 0) {
+                currentQuizIndex--;
+                updateQuiz(currentQuizIndex);
+                nextQuizButton.disabled = false;
+            } else {
+                prevQuizButton.disabled = true;
+            }
+        });
+
+        prevQuizButton.disabled = true;
+    });
+
+    document.addEventListener('DOMContentLoaded', () => {
+        const timeDisplay = document.querySelector('.cbt__time');
+        startTimer(120, timeDisplay);
+        createQuestions('cla1', 30, 0);
+        createQuestions('cla2', 30, 30);
+        createQuestions('cla3', 30, 60);
+        createQuestions('cla4', 30, 90);
+    });
+
+    function createQuestions(sectionId, numQuestions, startIndex) {
+        const section = document.getElementById(sectionId);
+        for (let i = 1; i <= numQuestions; i++) {
+            const omrDiv = document.createElement('div');
+            omrDiv.className = 'omr';
+            omrDiv.innerHTML = `
+                <strong data-index="${startIndex + i - 1}">${i}</strong>
+                <input type="radio" id="${sectionId}_${i}_1" name="${sectionId}_question${i}" value="1">
+                <label for="${sectionId}_${i}_1"><span class="label-inner">1</span></label>
+                <input type="radio" id="${sectionId}_${i}_2" name="${sectionId}_question${i}" value="2">
+                <label for="${sectionId}_${i}_2"><span class="label-inner">2</span></label>
+                <input type="radio" id="${sectionId}_${i}_3" name="${sectionId}_question${i}" value="3">
+                <label for="${sectionId}_${i}_3"><span class="label-inner">3</span></label>
+                <input type="radio" id="${sectionId}_${i}_4" name="${sectionId}_question${i}" value="4">
+                <label for="${sectionId}_${i}_4"><span class="label-inner">4</span></label>
+            `;
+            section.appendChild(omrDiv);
+
+            omrDiv.querySelector('strong').addEventListener('click', function () {
+                const questionIndex = parseInt(this.dataset.index);
+                currentQuizIndex = questionIndex;
+                updateQuiz(currentQuizIndex);
+            });
+
+            Array.from(omrDiv.querySelectorAll('input[type="radio"]')).forEach(input => {
+                input.addEventListener('change', (e) => {
+                    const questionIndex = startIndex + (parseInt(e.target.id.split('_')[1]) - 1);
+                    answerSelect(input, questionIndex);
+                });
+            });
         }
-    </style>
-</head>
+    }
 
-<body>
-    <!-- test2.html 내용 -->
-    <div class="cbt">
-        <div class="cbt__aside">
-            <div class="cbt__info">
-                <div>
-                    <button class="cbt__submit">제출하기</button>
-                    <span class="cbt__time">2시간 00분</span> <!-- 시작 시간을 '2시간 00분'으로 설정 -->
-                </div>
-                <div>
-                    <div class="cbt__score">
-                        <span>전체 문제수 : <em class="cbt__length">120</em>문항</span>
-                        <span>남은 문제수 : <em class="cbt__rest">120</em>문항</span><br>
-                        <span>점수 : <em class="cbt__end__score"> </em></span>
-                    </div>
-                </div>
-            </div>
-            <div class="cbt__omr">
-                <div id="cla1">
-                    <h3>무역규범</h3>
-                </div>
-                <div id="cla2">
-                    <h3>무역결제</h3>
-                </div>
-                <div id="cla3">
-                    <h3>무역계약</h3>
-                </div>
-                <div id="cla4">
-                    <h3>무역영어</h3>
-                </div>
-            </div>
-        </div>
-        <div class="container">
-            <!-- 53.html 내용 -->
-            <div class="quiz">
-                <h2 class="quiz__title">국제무역사 53회</h2>
-                <h3 class="subQuizTitle"></h3>
-                <div class="quiz__question">
-                    <img id="quizImage" src="" alt="문제 이미지">
-                </div>
-                <div class="quiz__choice">
-                    <label for="choice1">
-                        <input type="radio" id="choice1" name="choice" value="1">
-                        <span></span>
-                    </label>
-                    <label for="choice2">
-                        <input type="radio" id="choice2" name="choice" value="2">
-                        <span></span>
-                    </label>
-                    <label for="choice3">
-                        <input type="radio" id="choice3" name="choice" value="3">
-                        <span></span>
-                    </label>
-                    <label for="choice4">
-                        <input type="radio" id="choice4" name="choice" value="4">
-                        <span></span>
-                    </label>
-                </div>
-                <div class="quiz__answer">
-                    <button id="prevQuizButton" class="btn prev">이전 문제</button>
-                    <button id="nextQuizButton" class="btn next">다음 문제</button>
-                </div>
+    function updateRemainingQuestions() {
+        const totalQuestions = parseInt(document.querySelector('.cbt__length').textContent, 10);
+        const answeredQuestions = userAnswers.filter(answer => answer !== null).length;
+        const remainingQuestions = totalQuestions - answeredQuestions;
+        document.querySelector('.cbt__rest').textContent = remainingQuestions;
+    }
 
-                <script>
-                    const folderDescriptions = {
-                        'cla1': '무역규범',
-                        'cla2': '무역결제',
-                        'cla3': '무역계약',
-                        'cla4': '무역영어'
-                    };
+    function startTimer(duration, display) {
+        let timer = duration, hours, minutes;
+        const interval = setInterval(() => {
+            hours = parseInt(timer / 60, 10);
+            minutes = timer % 60;
 
-                    function generateQuizInfo(numImages, numFolders) {
-                        const quizInfo = [];
-                        for (let j = 1; j <= numFolders; j++) {
-                            for (let i = 1; i <= numImages; i++) {
-                                quizInfo.push({
-                                    imgSrc: `https://get1092.github.io/Trade/test53data/cla${j}/image${i}.png`,
-                                    imgAlt: `문제 이미지 ${i} from cla${j}`,
-                                    answer: Math.floor(Math.random() * 4) + 1, // 답변은 랜덤으로 생성
-                                    folder: `cla${j}`
-                                });
-                            }
-                        }
-                        return quizInfo;
-                    }
+            hours = hours < 10 ? "0" + hours : hours;
+            minutes = minutes < 10 ? "0" + minutes : minutes;
 
-                    const quizInfo = generateQuizInfo(30, 4);
-                    const userAnswers = new Array(quizInfo.length).fill(null);
-                    const quizImage = document.getElementById("quizImage");
-                    const subQuizTitle = document.querySelector(".subQuizTitle");
-                    let currentQuizIndex = 0;
+            display.textContent = hours + "시간 " + minutes + "분";
 
-                    function updateQuiz(index) {
-                        const quiz = quizInfo[index];
-                        document.getElementById('quizImage').src = quiz.imgSrc;
-                        document.getElementById('quizImage').alt = quiz.imgAlt;
-                        document.querySelector('.subQuizTitle').textContent = folderDescriptions[quiz.folder];
-                        quizImage.src = quizInfo[index].imgSrc;
-                        quizImage.alt = quizInfo[index].imgAlt;
-                        subQuizTitle.textContent = folderDescriptions[quizInfo[index].folder];
-                        const radioButtons = document.querySelectorAll('input[type="radio"]');
-                        radioButtons.forEach((button, idx) => {
-                            button.checked = (idx + 1) === userAnswers[index];
-                        });
-                    }
+            if (--timer < 0) {
+                clearInterval(interval);
+                alert("시간 초과!");
+            }
+        }, 60000);
+    }
 
-                    document.addEventListener("DOMContentLoaded", function () {
-                        createQuestions();
-                        initializeQuiz();
-                        attachAnswerListeners();
-                    });
-                    updateQuiz(currentQuizIndex);
-                    document.querySelectorAll('input[type="radio"]').forEach((button, idx) => {
-                        button.addEventListener('change', () => {
-                            userAnswers[currentQuizIndex] = idx + 1;
-                        });
-                    });
-                    function initializeQuiz() {
-                        const quizInfo = generateQuizInfo(30, 4); // 각 폴더마다 30개의 이미지
-                        updateQuiz(0); // 초기 문제 로드
-                    }
-                    const nextQuizButton = document.getElementById("nextQuizButton");
-                    nextQuizButton.addEventListener("click", function () {
-                        if (currentQuizIndex < quizInfo.length - 1) {
-                            currentQuizIndex++;
-                            updateQuiz(currentQuizIndex);
-                            document.getElementById("prevQuizButton").disabled = false;
-                        } else {
-                            nextQuizButton.disabled = true;
-                        }
-                    });
+    document.querySelector(".cbt__submit").addEventListener("click", function () {
+        let correctCount = 0; // 맞힌 문제 수를 세는 변수
+        userAnswers.forEach((answer, index) => {
+            const correctAnswer = quizInfo[index].answer;
+            const omrQuestions = document.querySelectorAll('.omr');
 
-                    const prevQuizButton = document.getElementById("prevQuizButton");
-                    prevQuizButton.addEventListener("click", function () {
-                        if (currentQuizIndex > 0) {
-                            currentQuizIndex--;
-                            updateQuiz(currentQuizIndex);
-                            nextQuizButton.disabled = false;
-                        } else {
-                            prevQuizButton.disabled = true;
-                        }
-                    });
+            if (answer !== null && parseInt(answer, 10) === correctAnswer) {
+                correctCount++; // 정답이면 맞힌 문제 수 증가
+            } else {
+                // 틀린 경우 빨간 배경으로 표시
+                omrQuestions[index].querySelector('strong').classList.add('incorrect');
+            }
+        });
 
-                    prevQuizButton.disabled = true; // 초기 상태에서는 이전 버튼 비활성화
+        // 점수 계산: 맞춘 문제 수에 따라 점수 계산
+        let score = Math.round((correctCount * 3.3)); // 문제당 3.3점을 부여하고 반올림하여 점수 계산
 
+        const scoreDisplay = document.querySelector('.cbt__end__score');
+        scoreDisplay.textContent = `점수: ${score}점`; // 계산된 점수를 화면에 표시
+        alert("시험 제출 완료! 점수: " + score + "점"); // 제출 완료 알림과 함께 점수 표시
 
-                    function createQuestions(sectionId, numQuestions) {
-                        ['cla1', 'cla2', 'cla3', 'cla4'].forEach(sectionId => {
-                            const section = document.getElementById(sectionId);
-                            for (let i = 1; i <= numQuestions; i++) {
-                                const omrDiv = document.createElement('div');
-                                omrDiv.className = 'omr';
-                                omrDiv.innerHTML = `
-                            <strong>${i}</strong>
-                            <input type="radio" id="${sectionId}_${i}_1" name="question${sectionId}_${i}">
-                            <label for="${sectionId}_${i}_1"><span class="label-inner">1</span></label>
-                            <input type="radio" id="${sectionId}_${i}_2" name="question${sectionId}_${i}">
-                            <label for="${sectionId}_${i}_2"><span class="label-inner">2</span></label>
-                            <input type="radio" id="${sectionId}_${i}_3" name="question${sectionId}_${i}">
-                            <label for="${sectionId}_${i}_3"><span class="label-inner">3</span></label>
-                            <input type="radio" id="${sectionId}_${i}_4" name="question${sectionId}_${i}">
-                            <label for="${sectionId}_${i}_4"><span class="label-inner">4</span></label>
-                        `;
-                                section.appendChild(omrDiv);
-
-                                Array.from(omrDiv.querySelectorAll('input[type="radio"]')).forEach(input => {
-                                    input.addEventListener('change', () => {
-                                        updateRemainingQuestions();
-                                    });
-                                });
-                            }
-                        })
-                    }
-
-                    function updateRemainingQuestions() {
-                        const totalQuestions = parseInt(document.querySelector('.cbt__length').textContent, 10);
-                        const answeredQuestions = Array.from(document.querySelectorAll('input[type=radio]:checked')).length;
-                        const remainingQuestions = totalQuestions - answeredQuestions;
-                        document.querySelector('.cbt__rest').textContent = remainingQuestions;
-                    }
-
-                    function startTimer(duration, display) {
-                        let timer = duration, hours, minutes;
-                        const interval = setInterval(() => {
-                            hours = parseInt(timer / 60, 10);
-                            minutes = timer % 60;
-
-                            hours = hours < 10 ? "0" + hours : hours;
-                            minutes = minutes < 10 ? "0" + minutes : minutes;
-
-                            display.textContent = hours + "시간 " + minutes + "분";
-
-                            if (--timer < 0) {
-                                clearInterval(interval);
-                                alert("시간 초과!");
-                            }
-                        }, 60000); // 감소하는 시간 간격을 60000ms, 즉 1분으로 설정
-                    }
-
-                    document.addEventListener('DOMContentLoaded', () => {
-                        const timeDisplay = document.querySelector('.cbt__time');
-                        startTimer(120, timeDisplay);
-                        createQuestions('cla1', 30);
-                        createQuestions('cla2', 30);
-                        createQuestions('cla3', 30);
-                        createQuestions('cla4', 30);
-                        attachAnswerListeners();
-                    });
-
-                    function attachAnswerListeners() {
-                        document.querySelectorAll('input[type="radio"]').forEach((button, idx) => {
-                            button.addEventListener('change', () => {
-                                userAnswers[currentQuizIndex] = idx + 1;
-                                // OMR 업데이트
-                                const omrId = `cla${quizInfo[currentQuizIndex].folder}_${currentQuizIndex + 1}_${idx + 1}`;
-                                const omrInput = document.getElementById(omrId);
-                                if (omrInput) {
-                                    omrInput.checked = true;
-                                } else {
-                                    console.error('OMR ID not found:', omrId);
-                                }
-                            });
-                        });
-                    }
-
-                    document.querySelector(".cbt__submit").addEventListener("click", function () {
-                        alert("시험 제출 완료!");
-                    });
-                    document.querySelectorAll('input[type="radio"]').forEach((button, idx) => {
-                        button.addEventListener('change', () => {
-                            userAnswers[currentQuizIndex] = idx + 1;
-                            // OMR 업데이트 추가
-                            const omrId = `cla${quizInfo[currentQuizIndex].folder}_${currentQuizIndex + 1}_${idx + 1}`;
-                            document.getElementById(omrId).checked = true;
-                        });
-                    });
-
-                </script>
-            </div>
-        </div>
+        // 디버깅을 위해 콘솔에 정보 출력
+        console.log(`맞춘 문제 수: ${correctCount}, 계산된 점수: ${score}`);
+    });
+</script>
 </body>
 
 </html>
