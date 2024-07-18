@@ -1,0 +1,45 @@
+[
+    {
+        "subject": "무역규범",
+        "question": "../53/test53data/cla1/image1.png",
+        "correct_answer": "3",
+        "incorrect_answers": ["1", "2", "4"],
+        "desc": ""
+    },
+    {
+        "subject": "무역규범",
+        "question": "../53/test53data/cla1/image2.png",
+        "correct_answer": "4",
+        "incorrect_answers": ["1", "2", "3"],
+        "desc": ""
+    },
+    {
+        "subject": "무역규범",
+        "question": "../53/test53data/cla1/image3.png",
+        "correct_answer": "1",
+        "incorrect_answers": ["2", "3", "4"],
+        "desc": ""
+    },
+    {
+        "subject": "무역규범",
+        "question": "../53/test53data/cla1/image4.png",
+        "correct_answer": "4",
+        "incorrect_answers": ["1", "2", "3"],
+        "desc": ""
+    },
+    {
+        "subject": "무역규범",
+        "question": "../53/test53data/cla1/image5.png",
+        "correct_answer": "3",
+        "incorrect_answers": ["1", "3", "4"],
+        "desc": ""
+    },
+    {
+        "subject": "무역규범",
+        "question": "../53/test53data/cla1/image6.png",
+        "correct_answer": "2",
+        "incorrect_answers": ["1", "3", "4"],
+        "desc": ""
+    }
+   
+]
